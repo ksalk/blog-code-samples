@@ -1,29 +1,47 @@
 using Microsoft.EntityFrameworkCore;
-using TestContainersExample.API;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddOpenApi();
-builder.Services.AddDbContext<WeatherDbContext>(options =>
+namespace TestContainersExample.API
 {
-    options.UseNpgsql("connection-string");
-});
-builder.Services.AddScoped<WeatherService>();
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
 
-var app = builder.Build();
+            ConfigureServices(builder.Services);
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
+            var app = builder.Build();
+
+            Configure(app);
+
+            app.Run();
+        }
+
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            services.AddOpenApi();
+            services.AddDbContext<WeatherDbContext>(options =>
+            {
+                options.UseNpgsql("connection-string");
+            });
+            services.AddScoped<WeatherService>();
+        }
+
+        private static void Configure(WebApplication app)
+        {
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi();
+            }
+
+            app.UseHttpsRedirection();
+
+            app.MapGet("/weatherforecast", async (WeatherService weatherService) =>
+            {
+                var weatherForecast = await weatherService.GetWeatherForecast();
+                return Results.Ok(weatherForecast);
+            })
+            .WithName("GetWeatherForecast");
+        }
+    }
 }
-
-app.UseHttpsRedirection();
-
-app.MapGet("/weatherforecast", async (WeatherService weatherService) =>
-{
-    var weatherForecast = await weatherService.GetWeatherForecast();
-    return Results.Ok(weatherForecast);
-})
-.WithName("GetWeatherForecast");
-
-app.Run();
