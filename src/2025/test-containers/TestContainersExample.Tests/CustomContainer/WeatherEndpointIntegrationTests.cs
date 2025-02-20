@@ -1,9 +1,9 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using TestContainersExample.API;
 
-namespace TestContainersExample.Tests.PreconfiguredContainer;
+namespace TestContainersExample.Tests.CustomContainer;
 
-public class WeatherEndpointIntegrationTests : PreconfiguredContainerIntegrationTestBase
+public class WeatherEndpointIntegrationTests : CustomContainerIntegrationTestBase
 {
     [Fact]
     public async Task TestWeatherForecastEndpoint()

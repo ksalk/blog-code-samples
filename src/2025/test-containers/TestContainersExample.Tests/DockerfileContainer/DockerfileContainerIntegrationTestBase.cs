@@ -1,16 +1,16 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Testcontainers.PostgreSql;
 using Microsoft.Extensions.DependencyInjection;
 using TestContainersExample.API;
 using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Containers;
 
-namespace TestContainersExample.Tests.PreconfiguredContainer;
+namespace TestContainersExample.Tests.DockerfileContainer;
 
-public class IntegrationTestBase : IAsyncLifetime
+public class DockerfileContainerIntegrationTestBase : IAsyncLifetime
 {
     protected HttpClient _client;
-    private PostgreSqlContainer _postgresContainer;
+    private IContainer _postgresContainer;
     private WebApplicationFactory<Program> _factory;
 
     private readonly string dbUsername = "testuser";
@@ -19,15 +19,25 @@ public class IntegrationTestBase : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _postgresContainer = new PostgreSqlBuilder()
-            .WithUsername(dbUsername)
-            .WithPassword(dbPassword)
-            .WithDatabase(dbName)
+        var postgresImage = new ImageFromDockerfileBuilder()
+            .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), "TestContainersExample.Tests/DockerfileContainer")
+            .WithDockerfile("Dockerfile")
+            .WithName("dockerfile-postgres")
+            .Build();
+        await postgresImage.CreateAsync();
+
+        _postgresContainer = new ContainerBuilder()
+            .WithImage(postgresImage)
+            .WithPortBinding(5432, true)
+            .WithEnvironment("POSTGRES_USER", dbUsername)
+            .WithEnvironment("POSTGRES_PASSWORD", dbPassword)
+            .WithEnvironment("POSTGRES_DB", dbName)
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
             .Build();
 
         await _postgresContainer.StartAsync();
-        var connectionString = _postgresContainer.GetConnectionString();
+        var connectionString = $"Host={_postgresContainer.Hostname};Port={_postgresContainer.GetMappedPublicPort(5432)};Database={dbName};Username={dbUsername};Password={dbPassword}";
+
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {

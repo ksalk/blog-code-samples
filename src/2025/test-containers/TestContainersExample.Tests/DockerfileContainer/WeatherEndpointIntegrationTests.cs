@@ -3,7 +3,7 @@ using TestContainersExample.API;
 
 namespace TestContainersExample.Tests.DockerfileContainer;
 
-public class WeatherEndpointIntegrationTests : IntegrationTestBase
+public class WeatherEndpointIntegrationTests : DockerfileContainerIntegrationTestBase
 {
     [Fact]
     public async Task TestWeatherForecastEndpoint()
