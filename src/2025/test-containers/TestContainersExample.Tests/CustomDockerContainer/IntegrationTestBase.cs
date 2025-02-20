@@ -13,6 +13,10 @@ public class IntegrationTestBase : IAsyncLifetime
     private IContainer _postgresContainer;
     private WebApplicationFactory<Program> _factory;
 
+    private readonly string dbUsername = "testuser";
+    private readonly string dbPassword = "testpassword";
+    private readonly string dbName = "testdb";
+
     public async Task InitializeAsync()
     {
         var postgresImage = new ImageFromDockerfileBuilder()
@@ -24,15 +28,15 @@ public class IntegrationTestBase : IAsyncLifetime
 
         _postgresContainer = new ContainerBuilder()
             .WithImage(postgresImage)
-            .WithExposedPort(5432)
-            .WithEnvironment("POSTGRES_DB", "testdb")
-            .WithEnvironment("POSTGRES_USER", "postgres")
-            .WithEnvironment("POSTGRES_PASSWORD", "testpassword")
+            .WithPortBinding(5432, true)
+            .WithEnvironment("POSTGRES_USER", dbUsername)
+            .WithEnvironment("POSTGRES_PASSWORD", dbPassword)
+            .WithEnvironment("POSTGRES_DB", dbName)
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
             .Build();
 
         await _postgresContainer.StartAsync();
-        var connectionString = $"Host={_postgresContainer.Hostname};Port=5432;Database=testdb;Username=postgres;Password=testpassword";
+        var connectionString = $"Host={_postgresContainer.Hostname};Port={_postgresContainer.GetMappedPublicPort(5432)};Database={dbName};Username={dbUsername};Password={dbPassword}";
 
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>

@@ -13,18 +13,21 @@ public class IntegrationTestBase : IAsyncLifetime
     private PostgreSqlContainer _postgresContainer;
     private WebApplicationFactory<Program> _factory;
 
+    private readonly string dbUsername = "testuser";
+    private readonly string dbPassword = "testpassword";
+    private readonly string dbName = "testdb";
+
     public async Task InitializeAsync()
     {
         _postgresContainer = new PostgreSqlBuilder()
-                .WithUsername("testuser")
-                .WithPassword("testpassword")
-                .WithDatabase("testdb")
-                .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
-                .Build();
+            .WithUsername(dbUsername)
+            .WithPassword(dbPassword)
+            .WithDatabase(dbName)
+            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(5432))
+            .Build();
 
         await _postgresContainer.StartAsync();
         var connectionString = _postgresContainer.GetConnectionString();
-
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
