@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using TestContainersExample.API;
 
-namespace TestContainersExample.Tests.CustomDockerContainer;
+namespace TestContainersExample.Tests.DockerfileContainer;
 
 public class WeatherEndpointIntegrationTests : IntegrationTestBase
 {

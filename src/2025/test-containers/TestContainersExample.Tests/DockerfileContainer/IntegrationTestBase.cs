@@ -5,7 +5,7 @@ using TestContainersExample.API;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 
-namespace TestContainersExample.Tests.CustomDockerContainer;
+namespace TestContainersExample.Tests.DockerfileContainer;
 
 public class IntegrationTestBase : IAsyncLifetime
 {
