@@ -5,9 +5,9 @@ using TestContainersExample.API;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 
-namespace TestContainersExample.Tests.CustomContainer;
+namespace TestContainersExample.Tests;
 
-public class CustomContainerIntegrationTestBase : IAsyncLifetime
+public class DockerfileContainerIntegrationTestBase : IAsyncLifetime
 {
     protected HttpClient _client;
     private IContainer _postgresContainer;
@@ -19,8 +19,15 @@ public class CustomContainerIntegrationTestBase : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        var postgresImage = new ImageFromDockerfileBuilder()
+            .WithDockerfileDirectory(CommonDirectoryPath.GetSolutionDirectory(), "TestContainersExample.Tests")
+            .WithDockerfile("PostgresqlDockerfile")
+            .WithName("dockerfile-postgres")
+            .Build();
+        await postgresImage.CreateAsync();
+
         _postgresContainer = new ContainerBuilder()
-            .WithImage("postgres:latest")
+            .WithImage(postgresImage)
             .WithPortBinding(5432, true)
             .WithEnvironment("POSTGRES_USER", dbUsername)
             .WithEnvironment("POSTGRES_PASSWORD", dbPassword)

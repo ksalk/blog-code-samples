@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TestContainersExample.API;
 using DotNet.Testcontainers.Builders;
 
-namespace TestContainersExample.Tests.PreconfiguredContainer;
+namespace TestContainersExample.Tests;
 
 public class PreconfiguredContainerIntegrationTestBase : IAsyncLifetime
 {
